@@ -1,11 +1,9 @@
 package www.rimes._int.rimes;
-import android.app.DatePickerDialog;
+
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
-import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -16,9 +14,6 @@ import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.DatePicker;
-import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.Spinner;
@@ -36,12 +31,9 @@ import com.android.volley.toolbox.Volley;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Set;
 
 import uk.co.senab.photoview.PhotoViewAttacher;
@@ -68,7 +60,6 @@ public class TabFragment3 extends Fragment implements View.OnClickListener {
 
     TextView textView_day;
 
-    private static  WebView wv_map = null;
     private static ViewGroup myParentViewGroup = null;
 
 
@@ -180,7 +171,7 @@ public class TabFragment3 extends Fragment implements View.OnClickListener {
         // Drop down layout style - list view with radio button
         adapter_parameter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 
-        // attaching data adapter to spinner
+        // Attaching data adapter to spinner
         mspinner_crop_parameter.setAdapter(adapter_parameter);
 
         mspinner_crop_parameter.setSelection(param_id);
@@ -248,7 +239,7 @@ public class TabFragment3 extends Fragment implements View.OnClickListener {
 
         @Override
         public void onNothingSelected(AdapterView<?> parent) {
-            Toast.makeText(getActivity(), "Nothing", Toast.LENGTH_LONG).show();
+
         }
     }
 

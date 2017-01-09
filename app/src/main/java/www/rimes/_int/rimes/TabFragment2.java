@@ -25,17 +25,6 @@ public class TabFragment2 extends Fragment {
         TextView tt = (TextView) view.findViewById(R.id.textView_test);
 
         tt.setText("This is the set Test !!");
-      /*  ViewPager mviewPager = (ViewPager) view.findViewById(R.id.subPager1);
-        mviewPager.setOffscreenPageLimit(4);
-
-
-
-        final PagerAdapterFrag1 adapter = new PagerAdapterFrag1
-                (getActivity().getSupportFragmentManager(), 4);
-        mviewPager.setAdapter(adapter);
-
-        CircleIndicator circleindicator = (CircleIndicator) view.findViewById(R.id.circleindicator);
-        circleindicator.setViewPager(mviewPager);*/
 
 
     }

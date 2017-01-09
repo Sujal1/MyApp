@@ -2,45 +2,40 @@ package www.rimes._int.rimes;
 
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.app.FragmentStatePagerAdapter;
-//import android.util.Log;
 import android.view.ViewGroup;
 
-public class PagerAdapterMain extends FragmentStatePagerAdapter {
-    int mNumOfTabs;
 
-    public PagerAdapterMain(FragmentManager fm, int NumOfTabs) {
+public class PagerAdapterMain extends FragmentStatePagerAdapter {
+
+    private int num_tabs;
+
+    public PagerAdapterMain(FragmentManager fm, int num_tabs) {
         super(fm);
-        this.mNumOfTabs = NumOfTabs;
+        this.num_tabs = num_tabs;
     }
 
 
     @Override
     public Object instantiateItem(ViewGroup container, int position) {
-
-       // Log.d("--InstantiateItem"+String.valueOf(position+1), "!!");
-
         return super.instantiateItem(container, position);
     }
 
     @Override
     public Fragment getItem(int position) {
 
-       // Log.d("--GetItem"+String.valueOf(position+1), "!!");
-
         switch (position) {
             case 0:
-                TabFragment1 tab1 = new TabFragment1();
+                TabFragment1 tab1 = new TabFragment1(); //Weather Info
                 return tab1;
             case 1:
-                TabFragment2 tab2 = new TabFragment2();
+                TabFragment2 tab2 = new TabFragment2(); //Weather Advisory
                 return tab2;
             case 2:
-                TabFragment3 tab3 = new TabFragment3();
+                TabFragment3 tab3 = new TabFragment3(); //Crop Info
                 return tab3;
             case 3:
-                TabFragment4 tab4 = new TabFragment4();
+                TabFragment4 tab4 = new TabFragment4(); //Crop Advisory
                 return tab4;
             default:
                 return null;
@@ -49,7 +44,7 @@ public class PagerAdapterMain extends FragmentStatePagerAdapter {
 
     @Override
     public int getCount() {
-        return mNumOfTabs;
+        return num_tabs;
     }
 
     @Override

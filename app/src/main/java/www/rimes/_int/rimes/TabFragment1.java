@@ -14,14 +14,18 @@ import android.view.ViewGroup;
 import android.webkit.WebView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.Toast;
+
+import com.koushikdutta.ion.Ion;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import me.relex.circleindicator.CircleIndicator;
+import uk.co.senab.photoview.PhotoViewAttacher;
 
 
 public class TabFragment1 extends Fragment {
@@ -48,7 +52,7 @@ public class TabFragment1 extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
-        return inflater.inflate(R.layout.newtab_fragment_1, container, false);
+        return inflater.inflate(R.layout.ion_test, container, false);
     }
 
 
@@ -56,7 +60,22 @@ public class TabFragment1 extends Fragment {
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        if (wv_map == null) {
+        ImageView iv_ion = (ImageView) view.findViewById(R.id.imgView_ion);
+
+        Ion.with(getActivity())
+                .load("http://www.rimes.int/files/mobtest/last_image.png")
+                .withBitmap()
+                .placeholder(R.drawable.common_plus_signin_btn_text_light)
+                .error(R.mipmap.ic_launcher)
+                //.animateLoad(spinAnimation)
+                //.animateIn(fadeInAnimation)
+                .intoImageView(iv_ion);
+
+
+        PhotoViewAttacher mAttacher = new PhotoViewAttacher(iv_ion);
+
+
+       /* if (wv_map == null) {
 
             myParentViewGroup = (ViewGroup) view.findViewById(R.id.tab_frag1_viewgroup);
 
@@ -151,7 +170,7 @@ public class TabFragment1 extends Fragment {
         }
 
     );
-
+*/
 }
     public void determineForecastType(int position) {
 
@@ -189,7 +208,7 @@ public class TabFragment1 extends Fragment {
 
             case 0:
                 Log.d("!--Precipiation"+fcst, "!!");
-                wv_map.loadUrl("file:///android_asset/ol_content.html");
+                wv_map.loadUrl("file:///android_asset/content.html");
 
                 break;
             case 1:

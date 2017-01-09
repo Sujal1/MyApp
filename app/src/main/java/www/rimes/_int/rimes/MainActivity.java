@@ -3,11 +3,11 @@ package www.rimes._int.rimes;
 
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.view.PagerTabStrip;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.widget.Toast;
 
@@ -23,6 +23,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     protected GoogleApiClient mGoogleApiClient;
     protected LocationRequest mLocationRequest;
 
+
+    private static double latitude = 0.0, longitude = 0.0;
+
     @Override
     protected void onStart() {
         super.onStart();
@@ -31,7 +34,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
     protected synchronized void buildClient() {
 
-        mGoogleApiClient = new GoogleApiClient.Builder(this).addApi(LocationServices.API)
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .addApi(LocationServices.API)
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
                 .build();
@@ -40,6 +44,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -49,8 +54,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         setSupportActionBar(toolbar);
         getSupportActionBar().setIcon(R.drawable.dm_logo);
 
-        PagerTabStrip pgStrip = (PagerTabStrip) findViewById(R.id.pager_title_strip);
-
+        //PagerTabStrip pgStrip = (PagerTabStrip) findViewById(R.id.pager_title_strip);
 
         final ViewPager viewPager = (ViewPager) findViewById(R.id.pager);
         viewPager.setOffscreenPageLimit(1);
@@ -58,12 +62,11 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         final PagerAdapterMain adapter = new PagerAdapterMain
                 (getSupportFragmentManager(), 4);
         viewPager.setAdapter(adapter);
-
-
     }
 
     @Override
     public void onConnected(Bundle bundle) {
+        //Success in making connection to the location service, Sets up another callback onLocationChanged
         mLocationRequest = LocationRequest.create();
         mLocationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
         mLocationRequest.setInterval(5000);
@@ -81,68 +84,35 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
     }
 
-    @Override
-    public void onConnectionSuspended(int i) {
-
-    }
 
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
-
+        //Services will call this method when the connection drops, this method will handle what to do in that case, generally we reconnect
+        mGoogleApiClient.reconnect();
     }
+
+
+    @Override
+    public void onConnectionSuspended(int i) {
+        //Similar to onConnectionFailed but handles the case when the connection is suspended, not necessarily broken, may use to cache info
+    }
+
 
     @Override
     public void onLocationChanged(Location location) {
 
-        Toast.makeText(MainActivity.this, String.valueOf(location.getLatitude()), Toast.LENGTH_LONG).show();
-        Toast.makeText(MainActivity.this, String.valueOf(location.getLongitude()), Toast.LENGTH_LONG).show();
+        //Toast.makeText(MainActivity.this, "Location changed", Toast.LENGTH_LONG).show();
+        latitude = location.getLatitude();
+        longitude = location.getLongitude();
+
     }
 
-
-     /*TabLayout tabLayout = (TabLayout) findViewById(R.id.tab_layout);
-        tabLayout.addTab(tabLayout.newTab().setText("Weather Info"));
-        tabLayout.addTab(tabLayout.newTab().setText("Weather Advisory"));
-        tabLayout.addTab(tabLayout.newTab().setText("Crop Info"));
-        tabLayout.addTab(tabLayout.newTab().setText("Crop Advisory"));
-        tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
-
-        final ViewPager viewPager = (ViewPager) findViewById(R.id.pager);
-        viewPager.setOffscreenPageLimit(4);
-        final PagerAdapterMain adapter = new PagerAdapterMain
-                (getSupportFragmentManager(), tabLayout.getTabCount());
-        viewPager.setAdapter(adapter);
-        viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
-        tabLayout.setOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
-            @Override
-            public void onTabSelected(TabLayout.Tab tab) {
-                viewPager.setCurrentItem(tab.getPosition());
-            }
-
-            @Override
-            public void onTabUnselected(TabLayout.Tab tab) {
-
-            }
-
-            @Override
-            public void onTabReselected(TabLayout.Tab tab) {
-
-            }
-        });*/
-
-    /*@Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
+    public static double getLatitude() {
+        return latitude;
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }*/
+    public static double getLongitude() {
+        return longitude;
+    }
 
 }
