@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+
+<html>
+
+	<head>
+
+
+		<style>
+
+			html, body {
+				height: 100%;
+				margin: 0;
+				padding: 0;
+			}
+
+			#map {
+				height: 100%;
+			}
+
+
+			#map img {
+				opacity: .4;
+			}
+
+
+			.gmnoprint a, .gmnoprint span {
+				display:none;	//remove copyright and terms of use
+			}
+
+			.gmnoprint div {
+				background:none !important;
+			}
+
+			.gm-style-mtc {
+				display: none;	//remove satellite option
+			}
+
+		</style>
+
+	</head>
+
+
+	<body>
+
+		<div id="map"></div>
+
+		<script type="text/javascript">
+
+
+				function initMap() {
+
+
+					var map = new google.maps.Map(document.getElementById('map'),{
+					  zoom: 4,
+					  center: {lat: 10, lng: 120},
+
+					  streetViewControl: false 	//remove the icon of person from the map
+					});
+
+
+				  	var src = "http://www.rimes.int/files/mobtest/wrf.kml?ver=" + Date.now();
+
+					var layer0 = new google.maps.KmlLayer(src,
+					{
+							preserveViewport: true
+
+					});
+
+
+					layer0.setMap(map);
+
+					console.log(layer0.getUrl());
+
+				}
+
+		</script>
+
+
+		<script async defer
+				src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBbbjvyLe4jVWaMGJZQynerR2lPrpWciVk&callback=initMap">
+		</script>
+
+	</body>
+
+</html>

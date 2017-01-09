@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+
+<html>
+
+	<head>
+
+		<style>
+
+			html, body {
+				height: 100%;
+				margin: 0;
+				padding: 0;
+			}
+
+			#map {
+				height: 100%;
+			}
+
+
+			#map img {
+				opacity: 1;
+			}
+
+
+			.gmnoprint a, .gmnoprint span {
+				display:none;	//remove copyright and terms of use
+			}
+
+			.gmnoprint div {
+				background:none !important;
+			}
+
+			.gm-style-mtc {
+				display: none;	//remove satellite option
+			}
+
+		</style>
+
+	</head>
+
+
+	<body>
+
+		<div id="map"></div>
+
+		<script type="text/javascript">
+
+
+				var historicalOverlay;
+
+				function initMap() {
+				  var map = new google.maps.Map(document.getElementById('map'), {
+					zoom: 4,
+					center: {lat: 15, lng: 90}
+				  });
+
+				  var imageBounds = {
+					north: 50,
+					south: -35,
+					east: 180,
+					west: 75
+				  };
+
+				  historicalOverlay = new google.maps.GroundOverlay(
+					 'http://www.rimes.int/files/mobtest/last_image.png',
+					  imageBounds);
+				  historicalOverlay.setMap(map);
+				}
+
+		</script>
+
+
+		<script async defer
+				src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBbbjvyLe4jVWaMGJZQynerR2lPrpWciVk&callback=initMap">
+		</script>
+
+	</body>
+
+</html>
