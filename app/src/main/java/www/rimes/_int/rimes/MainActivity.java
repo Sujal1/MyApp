@@ -1,118 +1,210 @@
 package www.rimes._int.rimes;
 
 
-import android.content.pm.PackageManager;
-import android.location.Location;
+import android.app.SearchManager;
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.view.PagerTabStrip;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.Display;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.WindowManager;
 import android.widget.Toast;
 
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.LocationListener;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationServices;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
+
+import org.json.JSONObject;
 
 
-public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
+public class MainActivity extends AppCompatActivity  {
 
-    protected GoogleApiClient mGoogleApiClient;
-    protected LocationRequest mLocationRequest;
+    private static int device_height, device_width;
 
+    private  String city;
 
-    private static double latitude = 0.0, longitude = 0.0;
 
     @Override
     protected void onStart() {
         super.onStart();
-        mGoogleApiClient.connect();
     }
 
-    protected synchronized void buildClient() {
-
-        mGoogleApiClient = new GoogleApiClient.Builder(this)
-                .addApi(LocationServices.API)
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this)
-                .build();
-
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
 
-        buildClient();
+       // calculateDimensions();
+
+        if (isCitySet()) {
+
+            setMainContent();
+
+        } else {
+
+            setContentView(R.layout.activity_main_info);
+
+        }
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        getSupportActionBar().setIcon(R.drawable.dm_logo);
+        getSupportActionBar().setIcon(R.drawable.app_banner);
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
 
-        //PagerTabStrip pgStrip = (PagerTabStrip) findViewById(R.id.pager_title_strip);
+
+    }
+
+
+    private void setMainContent() {
+
+        Toast.makeText(this, city + "(From Main)", Toast.LENGTH_LONG).show();
+
+        setContentView(R.layout.activity_main);
+
+        PagerTabStrip pgStrip = (PagerTabStrip) findViewById(R.id.pager_title_strip);
 
         final ViewPager viewPager = (ViewPager) findViewById(R.id.pager);
         viewPager.setOffscreenPageLimit(1);
 
-        final PagerAdapterMain adapter = new PagerAdapterMain
-                (getSupportFragmentManager(), 4);
+        final PagerAdapterMain adapter = new PagerAdapterMain(getSupportFragmentManager(), 4);
         viewPager.setAdapter(adapter);
+
     }
 
-    @Override
-    public void onConnected(Bundle bundle) {
-        //Success in making connection to the location service, Sets up another callback onLocationChanged
-        mLocationRequest = LocationRequest.create();
-        mLocationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
-        mLocationRequest.setInterval(5000);
-        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            return;
+
+    private boolean isCitySet() {
+
+        SharedPreferences sharedPref = this.getSharedPreferences("city", Context.MODE_PRIVATE);
+
+        city = sharedPref.getString("www.rimes._int.sesame.city", null);
+
+
+        if (city == null) {
+
+            return false;
         }
 
-        LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
+        return true;
+    }
+
+
+    private void calculateDimensions() {
+
+        WindowManager wm = (WindowManager)    MainActivity.this.getSystemService(Context.WINDOW_SERVICE);
+        Display display = wm.getDefaultDisplay();
+
+        device_height = display.getHeight();
+        device_width = display.getWidth();
+
+    }
+
+
+    public static int getDeviceHeight() {
+        return  device_height;
+    }
+
+    public static int getDeviceWidth() {
+        return  device_width;
+    }
+
+
+    public boolean onCreateOptionsMenu(Menu menu) {
+
+        MenuInflater menuInflater = getMenuInflater();
+        menuInflater.inflate(R.menu.menu_, menu);
+
+        SearchManager searchManager =
+                (SearchManager) getSystemService(Context.SEARCH_SERVICE);
+
+        android.support.v7.widget.SearchView searchView =
+                (android.support.v7.widget.SearchView) menu.findItem(R.id.action_search).getActionView();
+
+
+        searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
+
+        return true;
+
     }
 
 
     @Override
-    public void onConnectionFailed(ConnectionResult connectionResult) {
-        //Services will call this method when the connection drops, this method will handle what to do in that case, generally we reconnect
-        mGoogleApiClient.reconnect();
+    protected void onNewIntent(Intent intent) {
+        setIntent(intent);
+        handleIntent(intent);
     }
 
+    private void handleIntent(Intent intent) {
 
-    @Override
-    public void onConnectionSuspended(int i) {
-        //Similar to onConnectionFailed but handles the case when the connection is suspended, not necessarily broken, may use to cache info
+        if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
+
+            String query = intent.getStringExtra(SearchManager.QUERY);
+            Toast.makeText(MainActivity.this, query + "(New Intent)", Toast.LENGTH_LONG).show();
+
+            final String query_city = getIntent().getStringExtra(SearchManager.QUERY);
+
+            String url = "http://maps.google.com/maps/api/geocode/json?address=" + query_city;
+
+            RequestQueue queue = Volley.newRequestQueue(this);
+
+            JsonObjectRequest jsObjRequest = new JsonObjectRequest
+                    (Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
+
+                        @Override
+                        public void onResponse(JSONObject response) {
+
+                            try {
+
+
+                                double lng = response.getJSONArray("results").getJSONObject(0)
+                                        .getJSONObject("geometry").getJSONObject("location")
+                                        .getDouble("lng");
+
+                                double lat = response.getJSONArray("results").getJSONObject(0)
+                                        .getJSONObject("geometry").getJSONObject("location")
+                                        .getDouble("lat");
+
+
+                                SharedPreferences sharedPref = getSharedPreferences("city", Context.MODE_PRIVATE);
+                                SharedPreferences.Editor editor = sharedPref.edit();
+                                editor.putString("www.rimes._int.sesame.city", query_city);
+                                editor.commit();
+
+                                Toast.makeText(MainActivity.this, String.valueOf(lat), Toast.LENGTH_LONG).show();
+                                Toast.makeText(MainActivity.this, String.valueOf(lng), Toast.LENGTH_LONG).show();
+
+                                city = query_city;
+
+                                setMainContent();
+
+                            } catch (Exception e) {
+
+                                Toast.makeText(MainActivity.this, "Could not find the city!!", Toast.LENGTH_LONG).show();
+                                finish();
+
+                            }
+                        }
+                    }, new Response.ErrorListener() {
+
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
+
+                            Toast.makeText(MainActivity.this, "Could not find the city!!", Toast.LENGTH_LONG).show();
+                            finish();
+
+                        }
+                    });
+
+            queue.add(jsObjRequest);
+        }
     }
-
-
-    @Override
-    public void onLocationChanged(Location location) {
-
-        //Toast.makeText(MainActivity.this, "Location changed", Toast.LENGTH_LONG).show();
-        latitude = location.getLatitude();
-        longitude = location.getLongitude();
-
-    }
-
-    public static double getLatitude() {
-        return latitude;
-    }
-
-    public static double getLongitude() {
-        return longitude;
-    }
-
 }

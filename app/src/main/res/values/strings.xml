@@ -1,6 +1,9 @@
 <resources>
-    <string name="app_name">MyViewPager</string>
+    <string name="app_name">Sesame</string>
     <string name="title_activity_fragment">FragmentA</string>
     <string name="action_settings">Settings</string>
     <string name="crop_calendar"><u><b>Crop Calendar</b></u></string>
+    <string name="activity_main_info">Select a city.</string>
+    <string name="search">City</string>
+    <string name="search_hint">Enter a city</string>
 </resources>

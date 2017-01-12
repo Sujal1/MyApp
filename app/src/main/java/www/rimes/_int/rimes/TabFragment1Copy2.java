@@ -1,10 +1,9 @@
 package www.rimes._int.rimes;
 
 
+import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.os.Bundle;
-
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -12,25 +11,17 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.Spinner;
-
-import com.koushikdutta.ion.builder.Builders;
-import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import uk.co.senab.photoview.PhotoViewAttacher;
+
+public class TabFragment1Copy2 extends Fragment {
 
 
-public class TabFragment1 extends Fragment implements View.OnClickListener {
+    int parameter_id;
 
-
-    int forecast_param_id = 0, forecast_type_id = 0;
-
-    ImageView imageView_map;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -50,18 +41,17 @@ public class TabFragment1 extends Fragment implements View.OnClickListener {
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        imageView_map = (ImageView) view.findViewById(R.id.imageView_map);
-        PhotoViewAttacher mAttacher = new PhotoViewAttacher(imageView_map);
 
-        Picasso.with(getActivity()).setIndicatorsEnabled(true);
+     /*   Picasso.with(getActivity()).setIndicatorsEnabled(true);
 
-        loadContent("3 days");
+        Picasso.with(getActivity())
+                .load("http://www.rimes.int/files/mobtest/last_image.png")
+                .placeholder(R.drawable.common_google_signin_btn_icon_dark)
+                .into(iv_ion);
+    */
 
-        ImageButton imageButton_showmap = (ImageButton) view.findViewById(R.id.imageButton_showmap);
-        ImageButton imageButton_showgraph = (ImageButton) view.findViewById(R.id.imageButton_showgraph);
+        /*PhotoViewAttacher mAttacher = new PhotoViewAttacher(iv_ion);*/
 
-        imageButton_showgraph.setOnClickListener(TabFragment1.this);
-        imageButton_showmap.setOnClickListener(TabFragment1.this);
 
         Spinner mspinner_forecast_type = (Spinner) view.findViewById(R.id.spinner_forecast_type);
         Spinner mspinner_forecast_parameter = (Spinner) view.findViewById(R.id.spinner_forecast_parameter);
@@ -103,21 +93,40 @@ public class TabFragment1 extends Fragment implements View.OnClickListener {
         mspinner_forecast_type.setOnTouchListener(mlistener_forecast_type);
         mspinner_forecast_type.setOnItemSelectedListener(mlistener_forecast_type);
 
+
+       /* mspinner_forecast_parameter.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                Log.d("!--ParamItem Selected", "!--");
+                parameter_id = position;
+
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+
+
+        mspinner_forecast_type.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener()
+
+        {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                Log.d("!--FcstItem Selected", "!--");
+                determineForecastType(position);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+*/
     }
 
-    @Override
-    public void onClick(View v) {
-
-        if (v.getId() == R.id.imageButton_showgraph) {
-
-
-        } else if (v.getId() == R.id.imageButton_showmap) {
-
-            determineForecastType(forecast_type_id);
-
-        }
-    }
-
+    int param_id;
 
     public class SpinnerTouchListener implements AdapterView.OnItemSelectedListener, View.OnTouchListener {
 
@@ -150,11 +159,11 @@ public class TabFragment1 extends Fragment implements View.OnClickListener {
 
                 if (!fetch_web_content) {
 
-                    forecast_param_id = position;
+                    param_id = position;
 
                 } else {
 
-                    forecast_type_id = position;
+                    determineForecastType(position);
                 }
 
 
@@ -193,53 +202,20 @@ public class TabFragment1 extends Fragment implements View.OnClickListener {
 
     public void loadContent(String fcst) {
 
-        switch (forecast_param_id) {
+        switch (param_id) {
 
             case 0:
-
-                Picasso.with(getActivity())
-                    .load("http://www.rimes.int/files/mobtest/ppt.png")
-                    .placeholder(R.mipmap.ic_launcher)
-
-                    .into(imageView_map);
-
-                Log.d("!--Precipiation" + fcst, "!!");
+                Log.d("!--Precipiation"+fcst, "!!");
                 break;
-
             case 1:
-
-                Picasso.with(getActivity())
-                        .load("http://www.rimes.int/files/mobtest/tmp.png")
-                        .placeholder(R.mipmap.ic_launcher)
-                        .centerInside()
-                        .into(imageView_map);
-
-                Log.d("!--Temp" + fcst, "!!");
+                Log.d("!--Temp"+fcst, "!!");
                 break;
-
             case 2:
-
-                Picasso.with(getActivity())
-                        .load("http://www.rimes.int/files/mobtest/humid.png")
-                        .placeholder(R.mipmap.ic_launcher)
-
-                        .into(imageView_map);
-
-                Log.d("!--Humidity" + fcst, "!!");
+                Log.d("!--Humidity"+fcst, "!!");
                 break;
-
             case 3:
-
-                Picasso.with(getActivity())
-                        .load("http://www.rimes.int/files/mobtest/pet.png")
-                        .placeholder(R.mipmap.ic_launcher)
-                        .resize(MainActivity.getDeviceWidth(), MainActivity.getDeviceHeight())
-                        .onlyScaleDown()
-                        .into(imageView_map);
-
-                Log.d("!--PET" + fcst, "!!");
+                Log.d("!--PET"+fcst, "!!");
                 break;
-
             default:
                 break;
         }
