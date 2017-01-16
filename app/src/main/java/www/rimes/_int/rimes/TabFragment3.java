@@ -2,9 +2,12 @@ package www.rimes._int.rimes;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.RequiresApi;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
+import android.text.Html;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -42,19 +45,21 @@ import uk.co.senab.photoview.PhotoViewAttacher;
 public class TabFragment3 extends Fragment implements View.OnClickListener {
 
 
+    private int city_id;
+
     private int day, start_day, end_day, param_id;
 
     private static WebView webview_crop = null;
 
+    private static String advisory_url;
     private static String dekad_url = "http://agro-api.rimes.int/rest_server/dekads";
-
-    private static String advisory_url = "http://agro-api.rimes.int/rest_server/advisorys/id/1";
-
     private static String crop_calendar_url = "http://agro-api.rimes.int/rest_server/cropcalendars";
 
     private static String start_date, end_date, month, advisory;
 
     private static String param = "raint";
+
+    private DataBaseOperation dboperation;
 
     ImageView imageView_colorbar;
 
@@ -62,8 +67,10 @@ public class TabFragment3 extends Fragment implements View.OnClickListener {
 
     private static ViewGroup myParentViewGroup = null;
 
+   // private String city;
 
     Spinner mspinner_crop_parameter;
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -75,6 +82,22 @@ public class TabFragment3 extends Fragment implements View.OnClickListener {
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        city_id  = MainActivity.getCityId();
+
+        advisory_url  = "http://agro-api.rimes.int/rest_server/advisorys/id/" + city_id;
+
+
+        TextView txt_city_name = (TextView) view.findViewById(R.id.textView_cityname_frag3);
+
+        String city = MainActivity.getCity();
+
+        if(city != null) {
+            txt_city_name.setText(city);
+        }
+
+
+        dboperation = new DataBaseOperation(getActivity());
 
         textView_day = (TextView) view.findViewById(R.id.textView_day);
 
@@ -89,6 +112,7 @@ public class TabFragment3 extends Fragment implements View.OnClickListener {
             myParentViewGroup = (ViewGroup) view.findViewById(R.id.tabfragment3_frame_layout);
 
             webview_crop = (WebView) myParentViewGroup.findViewById(R.id.webviewCrop);
+
 
             getDekad();
 
@@ -265,8 +289,6 @@ public class TabFragment3 extends Fragment implements View.OnClickListener {
 
                             month = response.getString("month");
 
-                           // year = response.getString("year");
-
 
                             start_day = Integer.parseInt(start_date);
                             end_day = Integer.parseInt(end_date);
@@ -277,17 +299,21 @@ public class TabFragment3 extends Fragment implements View.OnClickListener {
 
                             if (isNewDekad()) {
 
-                                SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
+                                Toast.makeText(getActivity(), "New Dekad", Toast.LENGTH_LONG).show();
+                               /* SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
                                 SharedPreferences.Editor editor = sharedPref.edit();
                                 editor.putString("www.rimes.anint.myviewpager.start_date", start_date);
                                 editor.putString("www.rimes.anint.myviewpager.month", month);
 
-                                editor.commit();
+                                editor.commit();*/
 
                                 getAdvisory();
 
-                                getCropCalendar();
+                              //  getCropCalendar();
 
+
+                            } else {
+                                Toast.makeText(getActivity(), "Old Dekad", Toast.LENGTH_LONG).show();
                             }
 
                         } catch (Exception e) {
@@ -314,9 +340,31 @@ public class TabFragment3 extends Fragment implements View.OnClickListener {
 
     private boolean isNewDekad() {
 
+        dboperation.openDataBase();
+
+        String[] dekad_info = dboperation.getDekad(city_id);
+
+
+        if (dekad_info != null) {
+
+            Toast.makeText(getActivity(), dekad_info[0].toString(), Toast.LENGTH_LONG).show();
+
+            if (dekad_info[0].equals(start_date + "-" + end_date + " " + month)) {
+                dboperation.close();
+                return false;
+            } else {
+                dboperation.clearAll();
+            }
+        }
+
+
+        dboperation.close();
+
+        return true;
+
         //Check the month and the start date
 
-        SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
+        /*SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
 
         String date_stored = sharedPref.getString("www.rimes.anint.myviewpager.start_date", "#$%");
         String month_stored = sharedPref.getString("www.rimes.anint.myviewpager.month", "#$%");
@@ -325,7 +373,9 @@ public class TabFragment3 extends Fragment implements View.OnClickListener {
             return false;
         }
 
-        return true;
+        return true;*/
+
+
     }
 
 
@@ -336,6 +386,7 @@ public class TabFragment3 extends Fragment implements View.OnClickListener {
         JsonObjectRequest advisoryObjRequest = new JsonObjectRequest
                 (Request.Method.GET, advisory_url, null, new Response.Listener<JSONObject>() {
 
+                    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
                     @Override
                     public void onResponse(JSONObject response) {
 
@@ -343,11 +394,19 @@ public class TabFragment3 extends Fragment implements View.OnClickListener {
 
                             advisory = response.getString("advisory");
 
-                            SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
+                            /*SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
                             SharedPreferences.Editor editor = sharedPref.edit();
                             editor.putString("www.rimes.anint.myviewpager.advisory", advisory);
-                            editor.commit();
+                            editor.commit();*/
 
+
+                            Toast.makeText(getActivity(), advisory, Toast.LENGTH_LONG).show();
+
+                           /* dboperation.openDataBase();
+                            dboperation.clearAll();*/
+
+                            dboperation.openDataBase();
+                            dboperation.writeDekadInfo(city_id, start_date + "-" + end_date + " " + month, advisory);
 
                         } catch (Exception e) {
 
@@ -400,8 +459,6 @@ public class TabFragment3 extends Fragment implements View.OnClickListener {
 
                             }
 
-                            /*Toast.makeText(getActivity(), String.valueOf(sowing_string_builder), Toast.LENGTH_LONG).show();
-                            Toast.makeText(getActivity(), String.valueOf(forecast_string_builder), Toast.LENGTH_LONG).show();*/
 
                             SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
                             SharedPreferences.Editor editor = sharedPref.edit();
@@ -499,8 +556,6 @@ public class TabFragment3 extends Fragment implements View.OnClickListener {
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-
-        Log.d("!-SAVED", "123");
 
         outState.putInt("www.rimes._int.rimes.day", day);
         outState.putString("www.rimes._int.rimes.month", month);

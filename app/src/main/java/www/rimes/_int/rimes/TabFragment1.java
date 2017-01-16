@@ -15,8 +15,9 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.Spinner;
+import android.widget.TextView;
 
-import com.koushikdutta.ion.builder.Builders;
+
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
@@ -28,7 +29,9 @@ import uk.co.senab.photoview.PhotoViewAttacher;
 public class TabFragment1 extends Fragment implements View.OnClickListener {
 
 
-    int forecast_param_id = 0, forecast_type_id = 0;
+    int forecast_param_id = 0; //Precipitation = 0, Temperature = 1, Humidity = 2, PET = 3
+
+    int forecast_type_id = 0;   //3-days = 0, 10-days = 1, 1-month = 2, 3-months = 3
 
     ImageView imageView_map;
 
@@ -50,6 +53,12 @@ public class TabFragment1 extends Fragment implements View.OnClickListener {
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        TextView txt_city_name = (TextView) view.findViewById(R.id.textView_cityname_frag1);
+
+        if(MainActivity.getCity() != null) {
+            txt_city_name.setText(MainActivity.getCity());
+        }
+
         imageView_map = (ImageView) view.findViewById(R.id.imageView_map);
         PhotoViewAttacher mAttacher = new PhotoViewAttacher(imageView_map);
 
@@ -60,12 +69,11 @@ public class TabFragment1 extends Fragment implements View.OnClickListener {
         ImageButton imageButton_showmap = (ImageButton) view.findViewById(R.id.imageButton_showmap);
         ImageButton imageButton_showgraph = (ImageButton) view.findViewById(R.id.imageButton_showgraph);
 
-        imageButton_showgraph.setOnClickListener(TabFragment1.this);
         imageButton_showmap.setOnClickListener(TabFragment1.this);
+        imageButton_showgraph.setOnClickListener(TabFragment1.this);
 
         Spinner mspinner_forecast_type = (Spinner) view.findViewById(R.id.spinner_forecast_type);
         Spinner mspinner_forecast_parameter = (Spinner) view.findViewById(R.id.spinner_forecast_parameter);
-
 
         List<String> categories_forecast_parameter = new ArrayList<String>();
         categories_forecast_parameter.add("Precipitation");
@@ -79,11 +87,9 @@ public class TabFragment1 extends Fragment implements View.OnClickListener {
         categories_forecast_type.add("1 month");
         categories_forecast_type.add("03 months");
 
-
         // Creating adapters for spinner
         ArrayAdapter<String> adapter_forecast_parameter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_item, categories_forecast_parameter);
         ArrayAdapter<String> adapter_forecast_type = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_item, categories_forecast_type);
-
 
         // Drop down layout style - list view with radio button
         adapter_forecast_parameter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -211,7 +217,7 @@ public class TabFragment1 extends Fragment implements View.OnClickListener {
                 Picasso.with(getActivity())
                         .load("http://www.rimes.int/files/mobtest/tmp.png")
                         .placeholder(R.mipmap.ic_launcher)
-                        .centerInside()
+                        //.centerInside()
                         .into(imageView_map);
 
                 Log.d("!--Temp" + fcst, "!!");
@@ -224,7 +230,6 @@ public class TabFragment1 extends Fragment implements View.OnClickListener {
                         .placeholder(R.mipmap.ic_launcher)
 
                         .into(imageView_map);
-
                 Log.d("!--Humidity" + fcst, "!!");
                 break;
 
@@ -233,8 +238,8 @@ public class TabFragment1 extends Fragment implements View.OnClickListener {
                 Picasso.with(getActivity())
                         .load("http://www.rimes.int/files/mobtest/pet.png")
                         .placeholder(R.mipmap.ic_launcher)
-                        .resize(MainActivity.getDeviceWidth(), MainActivity.getDeviceHeight())
-                        .onlyScaleDown()
+                        //.resize(MainActivity.getDeviceWidth(), MainActivity.getDeviceHeight())
+                       // .onlyScaleDown()
                         .into(imageView_map);
 
                 Log.d("!--PET" + fcst, "!!");

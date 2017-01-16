@@ -7,6 +7,24 @@ package www.rimes._int.rimes;
 public class Temp {
 
 
+    /*if (c.moveToFirst()) {
+                while (!c.isAfterLast()) {
+                    Toast.makeText(activityName.this, "Table Name=> "+c.getString(0), Toast.LENGTH_LONG).show();
+                    Toast.makeText(myContext, c.toString(), Toast.LENGTH_LONG).show();
+                    c.moveToNext();
+                }
+            }*/
+
+           /* if (mcursor != null ) {
+                if  (mcursor.moveToFirst()) {
+                    do {
+                        Double lat = mcursor.getDouble(mcursor.getColumnIndex("lat"));
+                        Double lon = mcursor.getDouble(mcursor.getColumnIndex("lon"));
+                    }while (mcursor.moveToNext());
+                }
+            }*/
+
+
  /*Spinner mspinner_crop_param = (Spinner) view.findViewById(R.id.spinner_crop_param);
 
 

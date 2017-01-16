@@ -5,6 +5,15 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
+    <TextView
+        android:id="@+id/textView_cityname_frag3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:padding="10dp"
+        android:text="123"
+        android:textAppearance="@style/TextAppearance.AppCompat.Button" />
+
 
     <FrameLayout
         android:id="@+id/tabfragment3_frame_layout"

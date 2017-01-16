@@ -5,32 +5,45 @@ import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.database.MatrixCursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.view.PagerTabStrip;
 import android.support.v4.view.ViewPager;
+import android.support.v4.widget.CursorAdapter;
+import android.support.v4.widget.SimpleCursorAdapter;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Display;
 import android.view.Menu;
 import android.view.MenuInflater;
+import android.view.View;
 import android.view.WindowManager;
+import android.widget.ImageView;
 import android.widget.Toast;
 
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.Volley;
+import com.google.android.gms.appindexing.Action;
+import com.google.android.gms.appindexing.AppIndex;
+import com.google.android.gms.appindexing.Thing;
+import com.google.android.gms.common.api.GoogleApiClient;
 
-import org.json.JSONObject;
+import java.io.IOException;
+
+import static android.support.v4.widget.CursorAdapter.FLAG_REGISTER_CONTENT_OBSERVER;
 
 
-public class MainActivity extends AppCompatActivity  {
+public class MainActivity extends AppCompatActivity {
 
     private static int device_height, device_width;
 
-    private  String city;
+    private static  String city_name, city_lat, city_lon;
+
+    private static int city_id;
+
+    private DataBaseHelper myDbHelper;
 
 
     @Override
@@ -44,30 +57,45 @@ public class MainActivity extends AppCompatActivity  {
 
         super.onCreate(savedInstanceState);
 
-       // calculateDimensions();
+        // calculateDimensions();
 
-        if (isCitySet()) {
+        if (! setUpDatabase()) {
 
-            setMainContent();
+            Toast.makeText(this, "Error setting up database!", Toast.LENGTH_LONG).show();
 
         } else {
 
-            setContentView(R.layout.activity_main_info);
+            if (isCitySet()) {
 
+                setMainContent();
+
+            } else {
+
+                setContentView(R.layout.activity_main_info);
+                setToolbar();
+
+            }
         }
-
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        getSupportActionBar().setIcon(R.drawable.app_banner);
-        getSupportActionBar().setDisplayShowTitleEnabled(false);
+    }
 
 
+    private boolean setUpDatabase() {
+
+        myDbHelper = new DataBaseHelper(this);
+
+        try {
+
+            myDbHelper.createDataBase();
+            return true;
+
+        } catch (IOException ioe) {
+
+            return false;
+        }
     }
 
 
     private void setMainContent() {
-
-        Toast.makeText(this, city + "(From Main)", Toast.LENGTH_LONG).show();
 
         setContentView(R.layout.activity_main);
 
@@ -79,20 +107,35 @@ public class MainActivity extends AppCompatActivity  {
         final PagerAdapterMain adapter = new PagerAdapterMain(getSupportFragmentManager(), 4);
         viewPager.setAdapter(adapter);
 
+        setToolbar();
     }
 
 
+    private void setToolbar() {
+
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setIcon(R.drawable.app_banner);
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
+
+    }
+
     private boolean isCitySet() {
 
-        SharedPreferences sharedPref = this.getSharedPreferences("city", Context.MODE_PRIVATE);
+        SharedPreferences sharedPref = this.getSharedPreferences("www.rimes._int.sesame.CITY", Context.MODE_PRIVATE);
 
-        city = sharedPref.getString("www.rimes._int.sesame.city", null);
+        city_id = sharedPref.getInt("www.rimes._int.sesame.CITY.city_id", 0);
 
+        if (city_id == 0) {
 
-        if (city == null) {
-
-            return false;
+            return false; //city does not exist in our shared preference
         }
+
+        city_name = sharedPref.getString("www.rimes._int.sesame.CITY.city", null);
+
+        city_lat = sharedPref.getString("www.rimes._int.sesame.CITY.city_lat", null);
+
+        city_lon = sharedPref.getString("www.rimes._int.sesame.CITY.city_lon", null);
 
         return true;
     }
@@ -100,21 +143,12 @@ public class MainActivity extends AppCompatActivity  {
 
     private void calculateDimensions() {
 
-        WindowManager wm = (WindowManager)    MainActivity.this.getSystemService(Context.WINDOW_SERVICE);
+        WindowManager wm = (WindowManager) MainActivity.this.getSystemService(Context.WINDOW_SERVICE);
         Display display = wm.getDefaultDisplay();
 
         device_height = display.getHeight();
         device_width = display.getWidth();
 
-    }
-
-
-    public static int getDeviceHeight() {
-        return  device_height;
-    }
-
-    public static int getDeviceWidth() {
-        return  device_width;
     }
 
 
@@ -126,11 +160,62 @@ public class MainActivity extends AppCompatActivity  {
         SearchManager searchManager =
                 (SearchManager) getSystemService(Context.SEARCH_SERVICE);
 
-        android.support.v7.widget.SearchView searchView =
-                (android.support.v7.widget.SearchView) menu.findItem(R.id.action_search).getActionView();
-
+        final SearchView searchView =
+                (SearchView) menu.findItem(R.id.action_search).getActionView();
 
         searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
+
+        String[] columnNames = {"_id", "text"};
+
+        MatrixCursor cursor = new MatrixCursor(columnNames);
+        String[] array = getResources().getStringArray(R.array.cities);
+
+        String[] temp = new String[2];
+
+        int id = 0;
+
+        for (String item : array) {
+            temp[0] = Integer.toString(id++);
+            temp[1] = item;
+            cursor.addRow(temp);
+        }
+
+        String[] from = {"text"};
+        int[] to = {R.id.textView_search};
+        final SimpleCursorAdapter busStopCursorAdapter = new SimpleCursorAdapter(MainActivity.this, R.layout.search_suggestion, cursor, from, to, FLAG_REGISTER_CONTENT_OBSERVER);
+
+
+        searchView.setSuggestionsAdapter(busStopCursorAdapter);
+
+        searchView.setOnSuggestionListener(new SearchView.OnSuggestionListener() {
+            @Override
+            public boolean onSuggestionSelect(int position) {
+                return false;
+            }
+
+            @Override
+            public boolean onSuggestionClick(int position) {
+
+                Toast.makeText(MainActivity.this, String.valueOf(position), Toast.LENGTH_LONG).show();
+
+                Cursor cursor = (Cursor) searchView.getSuggestionsAdapter().getItem(position);
+
+                String query_city = cursor.getString(1);
+
+                searchView.clearFocus();
+
+                city_id = position + 1;
+
+                searchView.setQuery(query_city, true);
+
+              //  searchView.clearFocus();
+
+                return true; //indicates that the submit request has been handled, default false.
+
+            }
+
+
+        });
 
         return true;
 
@@ -147,64 +232,71 @@ public class MainActivity extends AppCompatActivity  {
 
         if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
 
-            String query = intent.getStringExtra(SearchManager.QUERY);
-            Toast.makeText(MainActivity.this, query + "(New Intent)", Toast.LENGTH_LONG).show();
+            String query_city = intent.getStringExtra(SearchManager.QUERY);
 
-            final String query_city = getIntent().getStringExtra(SearchManager.QUERY);
+            Toast.makeText(MainActivity.this, query_city + "(New Intent)", Toast.LENGTH_LONG).show();
 
-            String url = "http://maps.google.com/maps/api/geocode/json?address=" + query_city;
+            DataBaseOperation db_operation = new DataBaseOperation(this);
+            db_operation.openDataBase();
 
-            RequestQueue queue = Volley.newRequestQueue(this);
+            String[] latlon = db_operation.getLatLon(city_id);
 
-            JsonObjectRequest jsObjRequest = new JsonObjectRequest
-                    (Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
+            if (latlon == null) {
 
-                        @Override
-                        public void onResponse(JSONObject response) {
+                city_id = 0;
 
-                            try {
+                Toast.makeText(MainActivity.this, "Entered city not available in database!", Toast.LENGTH_LONG).show();
 
+            } else {
 
-                                double lng = response.getJSONArray("results").getJSONObject(0)
-                                        .getJSONObject("geometry").getJSONObject("location")
-                                        .getDouble("lng");
+                SharedPreferences sharedPref = getSharedPreferences("www.rimes._int.sesame.CITY", Context.MODE_PRIVATE);
+                SharedPreferences.Editor editor = sharedPref.edit();
+                editor.putInt("www.rimes._int.sesame.CITY.city_id", city_id);
+                editor.putString("www.rimes._int.sesame.CITY.city", query_city);
+                editor.putString("www.rimes._int.sesame.CITY.lat", latlon[0]);
+                editor.putString("www.rimes._int.sesame.CITY.lon", latlon[1]);
+                editor.commit();
 
-                                double lat = response.getJSONArray("results").getJSONObject(0)
-                                        .getJSONObject("geometry").getJSONObject("location")
-                                        .getDouble("lat");
+                city_name = query_city;
+                city_lat = latlon[0];
+                city_lon = latlon[1];
 
+                setMainContent();
+            }
 
-                                SharedPreferences sharedPref = getSharedPreferences("city", Context.MODE_PRIVATE);
-                                SharedPreferences.Editor editor = sharedPref.edit();
-                                editor.putString("www.rimes._int.sesame.city", query_city);
-                                editor.commit();
-
-                                Toast.makeText(MainActivity.this, String.valueOf(lat), Toast.LENGTH_LONG).show();
-                                Toast.makeText(MainActivity.this, String.valueOf(lng), Toast.LENGTH_LONG).show();
-
-                                city = query_city;
-
-                                setMainContent();
-
-                            } catch (Exception e) {
-
-                                Toast.makeText(MainActivity.this, "Could not find the city!!", Toast.LENGTH_LONG).show();
-                                finish();
-
-                            }
-                        }
-                    }, new Response.ErrorListener() {
-
-                        @Override
-                        public void onErrorResponse(VolleyError error) {
-
-                            Toast.makeText(MainActivity.this, "Could not find the city!!", Toast.LENGTH_LONG).show();
-                            finish();
-
-                        }
-                    });
-
-            queue.add(jsObjRequest);
         }
+    }
+
+    public static int getCityId() {
+        return city_id;
+    }
+
+
+    public static String getCity() {
+        return city_name;
+    }
+
+    public static String getLat() {
+        return city_lat;
+    }
+
+    public static String getLon() {
+        return city_lon;
+    }
+
+
+
+    public static int getDeviceHeight() {
+        return device_height;
+    }
+
+    public static int getDeviceWidth() {
+        return device_width;
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+
     }
 }

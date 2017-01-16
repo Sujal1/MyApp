@@ -1,30 +1,20 @@
 package www.rimes._int.rimes;
 
-import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.text.Html;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TableLayout;
-import android.widget.TableRow;
 import android.widget.TextView;
-
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Set;
 
 public class TabFragment4 extends Fragment {
 
-    private HashMap<Integer, String> forecast_hashmap = new HashMap<>();
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        Log.d("--TAB FRAGMENT 4", "TRUE");
+
         return inflater.inflate(R.layout.tab_fragment_4, container, false);
     }
 
@@ -33,14 +23,13 @@ public class TabFragment4 extends Fragment {
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        createForecastHashMap();
-
         TextView txt_advisory = (TextView) view.findViewById(R.id.textView_advisory);
 
+        DataBaseOperation db_operation = new DataBaseOperation(getActivity());
 
-        SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
-        String advisory = sharedPref.getString("www.rimes.anint.myviewpager.advisory", null);
+        db_operation.openDataBase();
 
+        String advisory = db_operation.fetchAdvisory(MainActivity.getCityId());
 
         if(advisory != null) {
 
@@ -56,7 +45,7 @@ public class TabFragment4 extends Fragment {
         }
 
 
-        Set<String> crop_set = sharedPref.getStringSet("www.rimes.anint.myviewpager.crops", Collections.<String>emptySet());
+        /*Set<String> crop_set = sharedPref.getStringSet("www.rimes.anint.myviewpager.crops", Collections.<String>emptySet());
         String sowing_list = sharedPref.getString("www.rimes.anint.myviewpager.sowing_types", null);
         String forecast_list = sharedPref.getString("www.rimes.anint.myviewpager.reqd_forecasts", null);
 
@@ -90,12 +79,12 @@ public class TabFragment4 extends Fragment {
 
             table.requestLayout();
 
-        }
+        }*/
 
     }
 
 
-    private void createForecastHashMap() {
+    /*private void createForecastHashMap() {
 
         forecast_hashmap.put(1, "Rainfall Forecast Required");
         forecast_hashmap.put(2, "Temperature Max Forecast Required");
@@ -105,7 +94,7 @@ public class TabFragment4 extends Fragment {
         forecast_hashmap.put(6, "Hailstorm Warning Required");
         forecast_hashmap.put(7, "Thunderstorm Warning Required");
 
-    }
+    }*/
 
 }
 
